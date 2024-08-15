@@ -30,12 +30,21 @@
             max-width: 500px;
             margin-top: 30px;
             transition: filter 0.3s;
+            text-align: center;
         }
 
-        #input-container input[type="file"], 
-        #input-container input[type="text"], 
+        #input-container h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #94DEA5, #9A6735);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #input-container input[type="file"],
+        #input-container input[type="text"],
         #input-container input[type="number"],
-        #input-container button, 
+        #input-container button,
         #input-container textarea {
             margin: 10px;
             padding: 10px;
@@ -53,7 +62,7 @@
         #file-label {
             display: inline-block;
             padding: 10px 20px;
-            background: linear-gradient(45deg, #ff4081, #007bff);
+            background: linear-gradient(45deg, #94DEA5, #075263);
             color: #fff;
             border: none;
             cursor: pointer;
@@ -63,7 +72,7 @@
         }
 
         #file-label:hover {
-            background: linear-gradient(45deg, #ff4081, #0056b3);
+            background: linear-gradient(45deg, #94DEA5, #075263);
         }
 
         #input-container input[type="file"]::file-selector-button {
@@ -72,7 +81,7 @@
 
         #input-container button {
             padding: 10px 20px;
-            background: linear-gradient(45deg, #ff4081, #007bff);
+            background: linear-gradient(45deg, #94DEA5, #075263);
             color: #fff;
             border: none;
             cursor: pointer;
@@ -81,7 +90,7 @@
         }
 
         #input-container button:hover {
-            background: linear-gradient(45deg, #ff4081, #0056b3);
+            background: linear-gradient(45deg, #94DEA5, #075263);
         }
 
         #res {
@@ -119,10 +128,10 @@
                 flex-wrap: wrap;
             }
 
-            #input-container input[type="file"], 
-            #input-container input[type="text"], 
+            #input-container input[type="file"],
+            #input-container input[type="text"],
             #input-container input[type="number"],
-            #input-container button, 
+            #input-container button,
             #input-container textarea {
                 margin: 10px 5px;
                 width: calc(33.333% - 10px);
@@ -134,10 +143,26 @@
                 width: calc(100% - 20px);
             }
         }
+
+        #map-container {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        #map {
+            width: 100%;
+            height: 300px;
+            border: 0;
+        }
     </style>
 </head>
 <body>
     <div id="input-container">
+        <h1>Travel Itinerary</h1>
         <label id="file-label" for="file-input">Choose File</label>
         <input type="file" id="file-input">
         <input type="text" id="fromPlace" placeholder="Starting Point">
@@ -146,8 +171,12 @@
         <input type="text" id="budget" placeholder="Budget">
         <input type="number" id="adults" placeholder="Number of Adults" min="1">
         <input type="number" id="children" placeholder="Number of Children" min="0">
-        <textarea id="plan" placeholder="Enter your plans (e.g., I want to see historical places.)" rows="4"></textarea>
-        <button id="btn">Get Response</button>
+        <textarea id="plan" placeholder="Enter your plans (e.g., I want to see historical places. And taste their food. Also, I want to go big shops.)" rows="4"></textarea>
+        <button id="btn">Generate Itinerary</button>
+
+        <div id="map-container">
+            <iframe id="map" src="" loading="lazy" allowfullscreen="" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
     </div>
 
     <div class="spinner" id="spinner"></div>
@@ -187,12 +216,15 @@
             Give me the response in only text format
             `;
 
+
             try {
                 const result = await model.generateContent(promptMsg);
                 const response = await result.response;
                 const text = await response.text();
 
                 const formattedResponse = formatResponse(text);
+    
+                updateMap(fromPlace, toPlace);
 
                 document.getElementById('res').innerText = formattedResponse;
             } catch (error) {
@@ -203,6 +235,15 @@
                 document.getElementById('input-container').classList.remove('blur');
             }
         }
+
+        function updateMap(from, to) {
+        const mapFrame = document.getElementById('map');
+        const baseMapUrl = "https://www.google.com/maps/embed/v1/directions";
+        const apiKey = "AIzaSyCOtvxkdQZUGgIFr3ChY9zEHWk7TzXNUmI";
+        const mapUrl = `${baseMapUrl}?key=${apiKey}&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}`;
+        mapFrame.src = mapUrl;
+    }
+
 
         function formatResponse(text) {
             text = text.trim();
